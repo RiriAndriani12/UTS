@@ -16,11 +16,11 @@ import random
 # SIMULASI DAFTAR KELAS (PENTING: URUTAN KELAS DITUKAR SEPENUHNYA)
 # ===========================================
 FOOD_CLASSES = {
-    0: "Gulai Ikan",
-    1: "Ayam Goreng",
-    2: "Ayam Pop",
-    3: "Daging Rendang",
-    4: "Dendeng Batokok",
+    0: "Ayam Goreng",
+    1: "Gulai Ikan",
+    2: "Daging Rendang",
+    3: "Dendeng Batokok",
+    4: "Ayam Pop",
 }
 NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
@@ -301,4 +301,5 @@ st.markdown(
     "<p style='text-align:center; color:gray;'>© 2025 | Smart Food Vision by Riri Andriani 🍱 | YOLOv8 + TensorFlow</p>",
     unsafe_allow_html=True
 )
+
 
