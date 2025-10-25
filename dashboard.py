@@ -22,7 +22,7 @@ def load_models():
 try:
     yolo_model, classifier = load_models()
 except Exception as e:
-    st.error(f"Gagal memuat model. Pastikan file model ada di direktori: {e}")
+    st.error(f"Gagal memuat model. Pastikan file model ada di folder 'Model/': {e}")
     st.stop() # Hentikan eksekusi jika model gagal dimuat
 
 # ===========================================
@@ -58,7 +58,7 @@ st.markdown(
 st.title("🍱 *Smart Food Vision*")
 st.markdown("### AI-powered food detection and nutrition estimation")
 
-# GANTI DARI st.radio KE st.selectbox untuk tampilan dropdown
+# Menggunakan st.selectbox untuk tampilan dropdown
 menu = st.sidebar.selectbox(
     "📂 Pilih Mode:",
     ["Deteksi Objek (YOLO)", "Klasifikasi Gambar & Nutrisi", "Analisis Model"]
@@ -71,10 +71,17 @@ def load_image_input():
     
     if not os.path.exists(sample_dir):
         st.error(f"Folder '{sample_dir}' tidak ditemukan. Pastikan sudah ada di direktori proyek.")
-        return None, None
+        return None
         
     sample_images = [f for f in os.listdir(sample_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-    selected_img = st.selectbox("📸 Pilih Gambar Contoh:", sample_images)
+    
+    # Tambahkan opsi untuk 'None' atau gambar default jika daftar kosong
+    if not sample_images:
+        st.warning("Folder Sampel Image kosong.")
+        selected_img = None
+    else:
+        selected_img = st.selectbox("📸 Pilih Gambar Contoh:", sample_images)
+        
     uploaded_file = st.file_uploader("📤 Atau Unggah Gambar Sendiri", type=["jpg", "jpeg", "png"])
     
     if uploaded_file:
@@ -98,14 +105,10 @@ if menu == "Deteksi Objek (YOLO)":
     if img:
         st.subheader("Hasil Deteksi YOLOv8")
         try:
-            # Menggunakan yolo_model dari load_models()
-            results = yolo_model(img, verbose=False) # verbose=False agar output console lebih bersih
-            
-            # Mendapatkan gambar hasil deteksi
+            results = yolo_model(img, verbose=False) 
             result_img = results[0].plot()
             st.image(result_img, caption="Hasil Deteksi YOLO", use_container_width=True)
             
-            # Menampilkan label yang terdeteksi
             labels = [yolo_model.names[int(cls)] for cls in results[0].boxes.cls]
             if labels:
                 st.success(f"✅ Objek Terdeteksi: **{', '.join(set(labels))}**")
@@ -142,10 +145,17 @@ elif menu == "Klasifikasi Gambar & Nutrisi":
 
                 # prediksi CNN
                 preds = classifier.predict(img_array, verbose=False)[0]
-                # Anda perlu mengganti ini dengan class_names aktual model Anda
-                class_names = [f"Makanan {i+1}" for i in range(len(preds))] 
+                
+                # ****** PERBAIKAN: Ganti class_names dengan nama makanan aktual ******
+                # ASUMSI urutan indeks kelas Anda berdasarkan folder sampel:
+                # Indeks 0: Ayam
+                # Indeks 1: Daging Rendang
+                # Indeks 2: Dendeng Batokok
+                # Indeks 3: Gulai Ikan
+                class_names = ["Ayam", "Daging Rendang", "Dendeng Batokok", "Gulai Ikan"]
+                
                 pred_index = np.argmax(preds)
-                predicted_food = class_names[pred_index]
+                predicted_food = class_names[pred_index] # Sekarang menampilkan nama makanan
                 confidence = preds[pred_index] * 100
                 
                 st.metric(label="Makanan Terprediksi", value=predicted_food)
@@ -161,7 +171,7 @@ elif menu == "Klasifikasi Gambar & Nutrisi":
         with col2:
             st.subheader("📊 Estimasi Nutrisi (Simulatif)")
 
-            # Estimasi nutrisi simulatif (sesuai kode asli Anda)
+            # Estimasi nutrisi simulatif
             kalori = random.randint(200, 600)
             protein = random.uniform(10, 40)
             lemak = random.uniform(5, 30)
@@ -217,4 +227,3 @@ st.markdown(
     "<p style='text-align:center; color:gray;'>© 2025 | Smart Food Vision by Riri Andriani 🍱 | YOLOv8 + TensorFlow</p>",
     unsafe_allow_html=True
 )
-
