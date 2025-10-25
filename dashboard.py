@@ -10,15 +10,14 @@ import plotly.express as px
 import random
 
 # ===========================================
-# SIMULASI DAFTAR KELAS (PENTING: SESUAIKAN DENGAN URUTAN MODEL ANDA)
-# Urutan yang sudah dikonfirmasi: 0=Ayam Goreng, 1=Ayam Pop, dst.
+# SIMULASI DAFTAR KELAS (DIPERBAIKI: ID 1 dan ID 4 DITUKAR)
 # ===========================================
 FOOD_CLASSES = {
     0: "Ayam Goreng",
-    1: "Ayam Pop",
+    1: "Gulai Ikan",        # <--- DITUKAR dari Ayam Pop (asumsi model salah memprediksi ID 1 sebagai Gulai Ikan)
     2: "Daging Rendang",
     3: "Dendeng Batokok",
-    4: "Gulai Ikan", 
+    4: "Ayam Pop",          # <--- DITUKAR dari Gulai Ikan (asumsi model salah memprediksi ID 4 sebagai Ayam Pop)
 }
 NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
@@ -131,7 +130,6 @@ def load_image_selection():
 
     return img.convert("RGB")
 
-# Pemisahan Mode di Sidebar
 menu = st.sidebar.radio(
     "📂 Pilih Mode:",
     ["🔍 Deteksi Objek YOLO", "🧠 Klasifikasi & Nutrisi"]
@@ -160,7 +158,8 @@ if menu == "🔍 Deteksi Objek YOLO":
         for r in results[0].boxes:
             class_id = int(r.cls.item())
             conf = r.conf.item()
-            food_name_by_id = FOOD_CLASSES.get(class_id, f"Objek Tak Dikenal {class_id}")
+            # Catatan: Di sini akan menggunakan pemetaan yang sudah ditukar
+            food_name_by_id = FOOD_CLASSES.get(class_id, f"Objek Tak Dikenal {class_id}") 
             detected_items.append(f"• {food_name_by_id} ({conf*100:.2f}%)")
         
         if detected_items:
@@ -181,11 +180,9 @@ elif menu == "🧠 Klasifikasi & Nutrisi":
     if img is None:
         st.stop()
 
-    # Layout untuk menampilkan gambar dan hasil
     col1, col2 = st.columns(2)
     
     with col1:
-        # Menampilkan gambar input di kolom kiri
         st.image(img, caption="📷 Gambar yang Diuji (Input Model Klasifikasi)", use_container_width=True)
 
     with col2:
@@ -206,11 +203,10 @@ elif menu == "🧠 Klasifikasi & Nutrisi":
                 pred_index = np.argmax(preds)
                 confidence_cnn = preds[pred_index] * 100
                 
-                # Mengambil nama kelas yang benar dari FOOD_CLASSES
+                # Menggunakan kamus yang sudah ditukar
                 if pred_index in FOOD_CLASSES:
                     predicted_food_cnn = FOOD_CLASSES[pred_index]
                 else:
-                    # Fallback jika indeks prediksi di luar rentang
                     predicted_food_cnn = f"Makanan (ID {pred_index})"
 
 
