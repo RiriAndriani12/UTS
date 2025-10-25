@@ -282,8 +282,8 @@ if menu == "🔍 Deteksi & Nutrisi YOLO":
 # ===========================================
 # MODE 2 – KLASIFIKASI GAMBAR CNN (MURNI)
 # ===========================================
-elif menu == "🧠 Klasifikasi Gambar CNN":
-    st.header("🧠 Klasifikasi Gambar (Model CNN)")
+elif menu == "🧠 Klasifikasi Gambar":
+    st.header("🧠 Klasifikasi Gambar")
 
     img = load_image_selection()
     if img is None:
@@ -372,4 +372,5 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
