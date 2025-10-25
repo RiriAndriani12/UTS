@@ -99,7 +99,7 @@ try:
     st.sidebar.image("aslab/bg diaz.jpeg", caption="Diaz Darsya Rizqullah")
     
     # DOSEN PEMBIMBING (Musliadi)
-    st.sidebar.markdown("**Dosen Pembimbing**") # KOREKSI LABEL AGAR BERUBAH
+    st.sidebar.markdown("**Dosen Pembimbing**") # KOREKSI LABEL BERUBAH DI SINI
     st.sidebar.image("aslab/bg mus.jpeg", caption="MUSLIADI")
 
 except Exception:
