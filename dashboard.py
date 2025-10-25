@@ -17,10 +17,10 @@ import random
 # ===========================================
 FOOD_CLASSES = {
     0: "Ayam Goreng",
-    1: "Gulai Ikan",
+    1: "Ayam Pop",
     2: "Daging Rendang",
     3: "Dendeng Batokok",
-    4: "Ayam Pop",
+    4: "Gulai Ikan", 
 }
 NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
@@ -301,5 +301,6 @@ st.markdown(
     "<p style='text-align:center; color:gray;'>© 2025 | Smart Food Vision by Riri Andriani 🍱 | YOLOv8 + TensorFlow</p>",
     unsafe_allow_html=True
 )
+
 
 
