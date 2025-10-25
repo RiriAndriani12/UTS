@@ -14,11 +14,16 @@ import random
 # ===========================================
 @st.cache_resource
 def load_models():
+    # Pastikan path model ini benar
     yolo_model = YOLO("Model/Riri Andriani_Laporan 4.pt")
     classifier = tf.keras.models.load_model("Model/saved_model.keras")
     return yolo_model, classifier
 
-yolo_model, classifier = load_models()
+try:
+    yolo_model, classifier = load_models()
+except Exception as e:
+    st.error(f"Gagal memuat model. Pastikan file model ada di direktori: {e}")
+    st.stop() # Hentikan eksekusi jika model gagal dimuat
 
 # ===========================================
 # STREAMLIT CONFIG
@@ -53,71 +58,110 @@ st.markdown(
 st.title("🍱 *Smart Food Vision*")
 st.markdown("### AI-powered food detection and nutrition estimation")
 
-menu = st.sidebar.radio(
+# GANTI DARI st.radio KE st.selectbox untuk tampilan dropdown
+menu = st.sidebar.selectbox(
     "📂 Pilih Mode:",
-    ["🍛 Deteksi & Estimasi Nutrisi", "📊 Analisis Model"]
+    ["Deteksi Objek (YOLO)", "Klasifikasi Gambar & Nutrisi", "Analisis Model"]
 )
 
-# ===========================================
-# MODE A – DETEKSI MAKANAN
-# ===========================================
-if menu == "🍛 Deteksi & Estimasi Nutrisi":
-    st.header("🍽 Deteksi Makanan & Estimasi Kalori")
-
+# Fungsi untuk memuat gambar
+def load_image_input():
     sample_dir = "Sampel Image"
+    img = None
+    
     if not os.path.exists(sample_dir):
         st.error(f"Folder '{sample_dir}' tidak ditemukan. Pastikan sudah ada di direktori proyek.")
-    else:
-        sample_images = [f for f in os.listdir(sample_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-        selected_img = st.selectbox("📸 Pilih Gambar Contoh:", sample_images)
-        uploaded_file = st.file_uploader("📤 Atau Unggah Gambar Sendiri", type=["jpg", "jpeg", "png"])
-
-        # === LOAD GAMBAR ===
-        if uploaded_file:
-            img = Image.open(uploaded_file)
-        else:
-            img = Image.open(os.path.join(sample_dir, selected_img))
-
-        img = img.convert("RGB")  # ⬅ tambahkan agar tidak error channel
+        return None, None
+        
+    sample_images = [f for f in os.listdir(sample_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    selected_img = st.selectbox("📸 Pilih Gambar Contoh:", sample_images)
+    uploaded_file = st.file_uploader("📤 Atau Unggah Gambar Sendiri", type=["jpg", "jpeg", "png"])
+    
+    if uploaded_file:
+        img = Image.open(uploaded_file).convert("RGB")
+    elif selected_img:
+        img = Image.open(os.path.join(sample_dir, selected_img)).convert("RGB")
+        
+    if img:
         st.image(img, caption="📷 Gambar yang Diuji", use_container_width=True)
+        return img
+    return None
 
+# ===========================================
+# MODE 1 – DETEKSI OBJEK (YOLO)
+# ===========================================
+if menu == "Deteksi Objek (YOLO)":
+    st.header("🔍 Deteksi Objek Makanan (YOLOv8)")
+    
+    img = load_image_input()
+
+    if img:
+        st.subheader("Hasil Deteksi YOLOv8")
+        try:
+            # Menggunakan yolo_model dari load_models()
+            results = yolo_model(img, verbose=False) # verbose=False agar output console lebih bersih
+            
+            # Mendapatkan gambar hasil deteksi
+            result_img = results[0].plot()
+            st.image(result_img, caption="Hasil Deteksi YOLO", use_container_width=True)
+            
+            # Menampilkan label yang terdeteksi
+            labels = [yolo_model.names[int(cls)] for cls in results[0].boxes.cls]
+            if labels:
+                st.success(f"✅ Objek Terdeteksi: **{', '.join(set(labels))}**")
+            else:
+                st.info("Tidak ada objek yang terdeteksi.")
+
+        except Exception as e:
+            st.error(f"Gagal menjalankan Deteksi YOLOv8: {e}")
+
+# ===========================================
+# MODE 2 – KLASIFIKASI GAMBAR & NUTRISI
+# ===========================================
+elif menu == "Klasifikasi Gambar & Nutrisi":
+    st.header("🧠 Klasifikasi Makanan & Estimasi Nutrisi")
+
+    img = load_image_input()
+    
+    if img:
         # === BAGI LAYOUT ===
         col1, col2 = st.columns(2)
 
         # ==============================
-        # 🔍 YOLO DETECTION
+        # 🧠 CNN CLASSIFICATION
         # ==============================
         with col1:
-            st.subheader("🔍 Deteksi Objek (YOLOv8)")
-            results = yolo_model(img)
-            result_img = results[0].plot()
-            st.image(result_img, caption="Hasil Deteksi YOLO", use_container_width=True)
+            st.subheader("🧠 Hasil Klasifikasi CNN")
+
+            try:
+                # Preprocessing untuk CNN Classifier
+                input_shape = classifier.input_shape[1:3]
+                img_resized = img.resize(input_shape)
+                img_array = image.img_to_array(img_resized)
+                img_array = np.expand_dims(img_array, axis=0) / 255.0
+
+                # prediksi CNN
+                preds = classifier.predict(img_array, verbose=False)[0]
+                # Anda perlu mengganti ini dengan class_names aktual model Anda
+                class_names = [f"Makanan {i+1}" for i in range(len(preds))] 
+                pred_index = np.argmax(preds)
+                predicted_food = class_names[pred_index]
+                confidence = preds[pred_index] * 100
+                
+                st.metric(label="Makanan Terprediksi", value=predicted_food)
+                st.success(f"🍽 Prediksi: **{predicted_food}** ({confidence:.2f}%)")
+
+            except Exception as e:
+                st.error(f"Gagal menjalankan Klasifikasi CNN: {e}")
+                predicted_food = "Unknown Food" # Fallback
 
         # ==============================
-        # 🧠 CNN CLASSIFICATION + NUTRISI
+        # 📊 ESTIMASI NUTRISI SIMULATIF
         # ==============================
         with col2:
-            st.subheader("🧠 Klasifikasi & Estimasi Nutrisi")
+            st.subheader("📊 Estimasi Nutrisi (Simulatif)")
 
-            input_shape = classifier.input_shape[1:3]
-            img_resized = img.resize(input_shape)
-            img_array = image.img_to_array(img_resized)
-            img_array = np.expand_dims(img_array, axis=0) / 255.0
-
-            # tampilkan ukuran
-            st.caption(f"Ukuran input model: {input_shape}")
-            st.caption(f"Shape array prediksi: {img_array.shape}")
-
-            # prediksi CNN
-            preds = classifier.predict(img_array)[0]
-            class_names = [f"Makanan {i+1}" for i in range(len(preds))]
-            pred_index = np.argmax(preds)
-            predicted_food = class_names[pred_index]
-            confidence = preds[pred_index] * 100
-
-            st.success(f"🍽 Prediksi: *{predicted_food}* ({confidence:.2f}%)")
-
-            # Estimasi nutrisi simulatif
+            # Estimasi nutrisi simulatif (sesuai kode asli Anda)
             kalori = random.randint(200, 600)
             protein = random.uniform(10, 40)
             lemak = random.uniform(5, 30)
@@ -127,7 +171,7 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
                 "Nutrisi": ["Kalori (kcal)", "Protein (g)", "Lemak (g)", "Karbohidrat (g)"],
                 "Nilai": [kalori, protein, lemak, karbo]
             })
-
+            
             # Grafik batang
             fig_bar = px.bar(
                 df_nutrisi,
@@ -140,20 +184,10 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
             fig_bar.update_layout(showlegend=False)
             st.plotly_chart(fig_bar, use_container_width=True)
 
-            # Grafik donat
-            fig_donut = px.pie(
-                df_nutrisi.iloc[1:], 
-                names="Nutrisi", 
-                values="Nilai",
-                hole=0.5, 
-                title="Proporsi Nutrisi (Tanpa Kalori)"
-            )
-            st.plotly_chart(fig_donut, use_container_width=True)
-
 # ===========================================
-# MODE B – ANALISIS MODEL
+# MODE 3 – ANALISIS MODEL (ASLI)
 # ===========================================
-elif menu == "📊 Analisis Model":
+elif menu == "Analisis Model":
     st.header("📈 Analisis Performa Model")
     file_path = "Model/evaluasi.csv"
 
@@ -173,7 +207,7 @@ elif menu == "📊 Analisis Model":
         else:
             st.info("Kolom 'epoch' dan 'val_loss' tidak ditemukan di CSV.")
     else:
-        st.warning("⚠ File evaluasi.csv belum tersedia di folder Model/. Upload dulu hasil evaluasi model kamu.")
+        st.warning("⚠ File evaluasi.csv belum tersedia di folder Model/. Harap tambahkan file tersebut untuk melihat analisis.")
 
 # ===========================================
 # FOOTER
