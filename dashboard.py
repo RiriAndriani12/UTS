@@ -90,16 +90,16 @@ st.set_page_config(page_title="Smart Food Vision 🍱", page_icon="🍱", layout
 
 # Tambahan: Menampilkan Foto di Sidebar
 st.sidebar.markdown("---")
-# KOREKSI HEADER UTAMA
+# KOREKSI HEADER UTAMA MENJADI ASISTEN LABORATORIUM
 st.sidebar.header("🎓 ASISTEN LABORATORIUM 🎓") 
 
 try:
     # ASLEB (Diaz)
     st.sidebar.markdown("**ASISTEN LABORATORIUM**") 
-    st.sidebar.image("aslab/bg diaz.jpeg", caption="DIAZ DARSYA RIZQULLAH")
+    st.sidebar.image("aslab/bg diaz.jpeg", caption="DIAZ DARSYA RIZQULLAH") # NAMA DIAZ CAPSLOCK
     
-    # ASLEB (Musliadi)
-    st.sidebar.markdown("**ASISTEN LABORATORIUM**")
+    # MUSLIADI (Sekarang dilabeli ASISTEN LABORATORIUM)
+    st.sidebar.markdown("**ASISTEN LABORATORIUM**") 
     st.sidebar.image("aslab/bg mus.jpeg", caption="MUSLIADI")
 
 except Exception:
@@ -364,11 +364,10 @@ st.markdown(
         <div class="footer-left footer-text">
             © 2025 | SMART FOOD VISION <br>
             <strong style="color: #2b2b2b;">RIRI ANDRIANI (2308108010068)</strong><br>
-            <span style="font-size: 0.8em; color: #4f4f4f;">ASLEB Baju Putih:</span> Diaz Darsya Rizqullah<br>
-            <span style="font-size: 0.8em; color: #4f4f4f;">Dosen Pembimbing:</span> MUSLIADI
+            <span style="font-size: 0.8em; color: #4f4f4f;">ASISTEN LABORATORIUM:</span> DIAZ DARSYA RIZQULLAH<br>
+            <span style="font-size: 0.8em; color: #4f4f4f;">ASISTEN LABORATORIUM:</span> MUSLIADI
         </div>
     </div>
     """,
     unsafe_allow_html=True
 )
-
