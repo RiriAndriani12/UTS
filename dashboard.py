@@ -23,7 +23,6 @@ NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
 
 # Dictionary untuk menyesuaikan penamaan kelas ID yang tidak ada di FOOD_CLASSES (sesuai permintaan user)
-# Diperlukan jika model CNN memiliki output lebih dari 5 kelas, namun kita hanya ingin menampilkan 5 nama makanan utama
 # ID 8, 6, 5 DIUBAH KE: Gulai Ikan, Daging Rendang, Ayam Goreng
 CUSTOM_CLASS_MAPPING = {
     8: "Gulai Ikan",
@@ -127,7 +126,6 @@ st.markdown(
         margin: 0;
         text-align: center;
     }
-    /* Logo USK dihapus dari CSS */
     </style>
     """,
     unsafe_allow_html=True
@@ -318,14 +316,14 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
                 
                 # Buat DataFrame hanya untuk 5 prediksi teratas (atau sebanyak kelas yang tersedia)
                 df_preds_data = []
-                for i in top_indices:
-                    # Ambil probabilitas untuk kelas i
+                # Memastikan kita hanya mengambil hingga 5 kelas yang relevan dengan output model
+                for count, i in enumerate(top_indices):
+                    if count >= top_k:
+                         break
+                    
                     prob = preds[i] * 100
-                    # Dapatkan nama kelas yang disesuaikan
                     class_name = get_display_name(i)
                     df_preds_data.append({"Kelas": class_name, "Probabilitas (%)": prob})
-                    if len(df_preds_data) >= top_k:
-                         break
                 
                 df_preds = pd.DataFrame(df_preds_data)
 
