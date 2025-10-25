@@ -110,7 +110,7 @@ st.markdown(
     }
     .footer-container {
         display: flex;
-        justify-content: center; /* Diubah menjadi center karena logo di kanan dihapus */
+        justify-content: center;
         align-items: center;
         padding: 10px 0;
         margin-top: 20px;
@@ -120,10 +120,11 @@ st.markdown(
     }
     .footer-left {
         display: flex;
+        flex-direction: column; /* Mengubah arah layout menjadi kolom */
         align-items: center;
     }
     .footer-text {
-        margin: 0;
+        margin: 2px 0; /* Memberi sedikit jarak antar baris */
         text-align: center;
     }
     </style>
@@ -336,7 +337,7 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
             st.warning("Model Klasifikasi CNN tidak dimuat. Prediksi tidak dapat dilakukan.")
 
 # ===========================================
-# FOOTER (Logo USK Dihapus)
+# FOOTER (Dengan Keterangan ASLEB dan Dosen)
 # ===========================================
 st.markdown("---")
 st.markdown(
@@ -344,7 +345,9 @@ st.markdown(
     <div class="footer-container">
         <div class="footer-left footer-text">
             © 2025 | SMART FOOD VISION <br>
-            RIRI ANDRIANI (2308108010068)
+            <strong style="color: #2b2b2b;">RIRI ANDRIANI (2308108010068)</strong><br>
+            <span style="font-size: 0.8em; color: #4f4f4f;">ASLEB Baju Putih:</span> Diaz Darsya Rizqullah<br>
+            <span style="font-size: 0.8em; color: #4f4f4f;">Dosen Pembimbing:</span> MUSLIADI
         </div>
     </div>
     """,
