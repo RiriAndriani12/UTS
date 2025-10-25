@@ -12,9 +12,6 @@ import random
 # ===========================================
 # SIMULASI DAFTAR KELAS
 # ===========================================
-# ===========================================
-# SIMULASI DAFTAR KELAS (PENTING: URUTAN KELAS DITUKAR SEPENUHNYA)
-# ===========================================
 FOOD_CLASSES = {
     0: "Ayam Goreng",
     1: "Ayam Pop",
@@ -44,7 +41,6 @@ except Exception as e:
 # ===========================================
 # ESTIMASI NUTRISI (FUNGSI UTK SIMULASI DATA BERDASARKAN MAKANAN)
 # ===========================================
-# Fungsi ini HANYA akan dipanggil di Mode YOLO
 def estimate_nutrition(food_name):
     if "Ayam Goreng" in food_name:
         kalori = random.randint(350, 550)
@@ -103,6 +99,27 @@ st.markdown(
     }
     .stButton>button:hover {
         background-color: #ff944d;
+    }
+    .footer-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        margin-top: 20px;
+        border-top: 1px solid #e0e0e0;
+        color: gray;
+        font-size: 0.9em;
+    }
+    .footer-left, .footer-right {
+        display: flex;
+        align-items: center;
+    }
+    .footer-text {
+        margin: 0;
+    }
+    .usk-logo {
+        height: 40px; /* Atur ukuran logo sesuai kebutuhan */
+        margin-left: 10px;
     }
     </style>
     """,
@@ -277,7 +294,7 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
 
                 st.success(f"🧠 Prediksi Tertinggi: *{predicted_food_cnn}* ({confidence_cnn:.2f}%)")
                 
-                # PERBAIKAN: Mengubah top_k menjadi NUM_CLASSES (5)
+                # Menampilkan semua 5 prediksi
                 top_k = NUM_CLASSES 
                 top_indices = np.argsort(preds)[::-1][:top_k]
                 
@@ -292,15 +309,23 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
                 st.error(f"Gagal melakukan prediksi dengan model CNN. Error: {e}")
         else:
             st.warning("Model Klasifikasi CNN tidak dimuat. Prediksi tidak dapat dilakukan.")
-            
+
 # ===========================================
 # FOOTER
 # ===========================================
 st.markdown("---")
 st.markdown(
-    "<p style='text-align:center; color:gray;'>© 2025 | Smart Food Vision by Riri Andriani 🍱 | YOLOv8 + TensorFlow</p>",
+    f"""
+    <div class="footer-container">
+        <div class="footer-left footer-text">
+            © 2025 | SMART FOOD VISION <br>
+            RIRI ANDRIANI (2308108010068)
+        </div>
+        <div class="footer-right">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Logo_Universitas_Syiah_Kuala.svg/1200px-Logo_Universitas_Syiah_Kuala.svg.png" 
+                 alt="Logo USK" class="usk-logo">
+        </div>
+    </div>
+    """,
     unsafe_allow_html=True
 )
-
-
-
