@@ -90,17 +90,16 @@ st.set_page_config(page_title="Smart Food Vision 🍱", page_icon="🍱", layout
 
 # Tambahan: Menampilkan Foto di Sidebar
 st.sidebar.markdown("---")
-st.sidebar.header("🎓ASISTEN LABORATORIUM🎓")
+# KOREKSI HEADER UTAMA
+st.sidebar.header("🎓 TIM PROYEK 🎓") 
 
 try:
-    # Asisten Laboratorium
-    st.sidebar.markdown("**Asisten Laboratorium**")
-    # PATH TELAH DIUBAH KE aslab/
-    st.sidebar.image("aslab/bg diaz.jpeg", caption="DIAZ DARSYA RIZQULLAH")
+    # ASLEB (Diaz)
+    st.sidebar.markdown("**ASLEB Baju Putih**") 
+    st.sidebar.image("aslab/bg diaz.jpeg", caption="Diaz Darsya Rizqullah")
     
-    # Asisten Laboratorium
-    st.sidebar.markdown("**Asisten Laboratorium**")
-    # PATH TELAH DIUBAH KE aslab/
+    # DOSEN PEMBIMBING (Musliadi)
+    st.sidebar.markdown("**Dosen Pembimbing**") # KOREKSI LABEL AGAR BERUBAH
     st.sidebar.image("aslab/bg mus.jpeg", caption="MUSLIADI")
 
 except Exception:
@@ -281,7 +280,6 @@ if menu == "🔍 Deteksi & Nutrisi YOLO":
 
 # ===========================================
 # MODE 2 – KLASIFIKASI GAMBAR (MURNI)
-# KOREKSI: Kondisi 'elif' disesuaikan dengan pilihan di st.sidebar.radio
 # ===========================================
 elif menu == "🧠 Klasifikasi Gambar":
     st.header("🧠 Klasifikasi Gambar")
