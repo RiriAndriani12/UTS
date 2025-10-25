@@ -91,15 +91,15 @@ st.set_page_config(page_title="Smart Food Vision 🍱", page_icon="🍱", layout
 # Tambahan: Menampilkan Foto di Sidebar
 st.sidebar.markdown("---")
 # KOREKSI HEADER UTAMA
-st.sidebar.header("🎓 TIM PROYEK 🎓") 
+st.sidebar.header("🎓 ASISTEN LABORATORIUM 🎓") 
 
 try:
     # ASLEB (Diaz)
-    st.sidebar.markdown("**ASLEB Baju Putih**") 
-    st.sidebar.image("aslab/bg diaz.jpeg", caption="Diaz Darsya Rizqullah")
+    st.sidebar.markdown("**ASISTEN LABORATORIUM**") 
+    st.sidebar.image("aslab/bg diaz.jpeg", caption="DIAZ DARSYA RIZQULLAH")
     
-    # DOSEN PEMBIMBING (Musliadi)
-    st.sidebar.markdown("**Dosen Pembimbing**") # KOREKSI LABEL BERUBAH DI SINI
+    # ASLEB (Musliadi)
+    st.sidebar.markdown("**ASISTEN LABORATORIUM**")
     st.sidebar.image("aslab/bg mus.jpeg", caption="MUSLIADI")
 
 except Exception:
@@ -371,3 +371,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
