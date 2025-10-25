@@ -217,3 +217,4 @@ st.markdown(
     "<p style='text-align:center; color:gray;'>© 2025 | Smart Food Vision by Riri Andriani 🍱 | YOLOv8 + TensorFlow</p>",
     unsafe_allow_html=True
 )
+
