@@ -10,14 +10,17 @@ import plotly.express as px
 import random
 
 # ===========================================
-# SIMULASI DAFTAR KELAS (PENTING: SESUAIKAN DENGAN URUTAN MODEL ANDA)
+# SIMULASI DAFTAR KELAS
+# ===========================================
+# ===========================================
+# SIMULASI DAFTAR KELAS (PENTING: URUTAN KELAS DITUKAR SEPENUHNYA)
 # ===========================================
 FOOD_CLASSES = {
-    0: "Ayam Goreng",
-    1: "Ayam Pop",
-    2: "Daging Rendang",
-    3: "Dendeng Batokok",
-    4: "Gulai Ikan", 
+    0: "Gulai Ikan",
+    1: "Ayam Goreng",
+    2: "Ayam Pop",
+    3: "Daging Rendang",
+    4: "Dendeng Batokok",
 }
 NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
@@ -274,8 +277,8 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
 
                 st.success(f"🧠 Prediksi Tertinggi: *{predicted_food_cnn}* ({confidence_cnn:.2f}%)")
                 
-                # Menampilkan 3 prediksi teratas (opsional, untuk analisis)
-                top_k = 3
+                # PERBAIKAN: Mengubah top_k menjadi NUM_CLASSES (5)
+                top_k = NUM_CLASSES 
                 top_indices = np.argsort(preds)[::-1][:top_k]
                 
                 st.markdown("##### Probabilitas Lengkap:")
@@ -289,7 +292,7 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
                 st.error(f"Gagal melakukan prediksi dengan model CNN. Error: {e}")
         else:
             st.warning("Model Klasifikasi CNN tidak dimuat. Prediksi tidak dapat dilakukan.")
-
+            
 # ===========================================
 # FOOTER
 # ===========================================
@@ -298,3 +301,4 @@ st.markdown(
     "<p style='text-align:center; color:gray;'>© 2025 | Smart Food Vision by Riri Andriani 🍱 | YOLOv8 + TensorFlow</p>",
     unsafe_allow_html=True
 )
+
