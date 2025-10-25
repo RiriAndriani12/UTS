@@ -12,14 +12,15 @@ import random
 # ===========================================
 # SIMULASI DAFTAR KELAS (SESUAIKAN DENGAN MODEL ANDA)
 # ===========================================
-# Perubahan: Daftar kelas disesuaikan dengan penambahan Ayam Pop
+# Perubahan: Daftar kelas disesuaikan dengan urutan yang BENAR dari model Anda
 FOOD_CLASSES = {
     0: "Ayam Goreng",
-    1: "Daging Rendang",
-    2: "Dendeng Batokok",
-    3: "Gulai Ikan",
-    4: "Ayam Pop", # Tambahan Ayam Pop
-    # Pastikan ID kelas (0, 1, 2, 3, 4) ini sesuai dengan penomoran kelas di model YOLO dan CNN Anda
+    1: "Ayam Pop",
+    2: "Daging Rendang",
+    3: "Dendeng Batokok",
+    4: "Gulai Ikan", 
+    # Pastikan ID kelas ini (0, 1, 2, 3, 4) sudah PASTI sesuai dengan urutan kelas
+    # yang digunakan saat melatih model YOLOv8 dan CNN Anda.
 }
 NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
@@ -52,7 +53,7 @@ def estimate_nutrition(food_name):
         protein = random.uniform(25, 40)
         lemak = random.uniform(15, 35)
         karbo = random.uniform(5, 20)
-    elif "Ayam Pop" in food_name: # Tambahan logika nutrisi untuk Ayam Pop
+    elif "Ayam Pop" in food_name:
         kalori = random.randint(300, 450)
         protein = random.uniform(20, 35)
         lemak = random.uniform(10, 25)
@@ -113,7 +114,6 @@ st.markdown(
 st.title("🍱 *Smart Food Vision*")
 st.markdown("### AI-powered food detection and nutrition estimation")
 
-# Perubahan: Mengganti "📊 Analisis Model" menjadi "🎯 Analisis Klasifikasi"
 menu = st.sidebar.radio(
     "📂 Pilih Mode:",
     ["🍛 Deteksi & Estimasi Nutrisi", "🎯 Analisis Klasifikasi"]
@@ -123,7 +123,6 @@ menu = st.sidebar.radio(
 # MODE A – DETEKSI MAKANAN
 # ===========================================
 if menu == "🍛 Deteksi & Estimasi Nutrisi":
-    # Perubahan: Mengganti judul atas
     st.header("🍽 Deteksi Makanan & Estimasi Gizi")
 
     sample_dir = "Sampel Image"
@@ -144,7 +143,7 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
                  st.stop()
             img = Image.open(img_path)
 
-        img = img.convert("RGB")  # ⬅ tambahkan agar tidak error channel
+        img = img.convert("RGB")
         st.image(img, caption="📷 Gambar yang Diuji", use_container_width=True)
 
         # === BAGI LAYOUT ===
@@ -158,8 +157,7 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
         with col1:
             st.subheader("🔍 Deteksi Objek (YOLOv8)")
             if yolo_model:
-                # Menjalankan deteksi
-                results = yolo_model(img, verbose=False) # verbose=False untuk mengurangi output di Streamlit
+                results = yolo_model(img, verbose=False)
                 result_img = results[0].plot()
                 st.image(result_img, caption="Hasil Deteksi YOLO", use_container_width=True)
 
@@ -167,7 +165,6 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
                 for r in results[0].boxes:
                     class_id = int(r.cls.item())
                     conf = r.conf.item()
-                    # Menambahkan nama kelas dari deteksi YOLO (disesuaikan dengan FOOD_CLASSES)
                     if class_id in FOOD_CLASSES:
                         detected_food_names.append(f"{FOOD_CLASSES[class_id]} ({conf*100:.2f}%)")
                     else:
@@ -187,12 +184,10 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
                 # KASUS 1: Objek terdeteksi oleh YOLO
                 st.info(f"✅ Ditemukan {len(detected_food_names)} Objek Makanan:")
                 
-                # Asumsi: Kita hanya menggunakan prediksi untuk objek PERTAMA yang dideteksi
                 first_detection = detected_food_names[0].split('(')[0].strip() 
                 predicted_food = first_detection
                 confidence = float(detected_food_names[0].split('(')[1].strip('% )'))
 
-                # Perubahan: Judul prediksi disesuaikan dengan nama objek yang dideteksi
                 st.success(f"🍽 Makanan Utama (Dari YOLO): *{predicted_food}* ({confidence:.2f}%)")
                 st.caption(f"Objek terdeteksi lainnya: {', '.join(detected_food_names[1:])}" if len(detected_food_names) > 1 else "Hanya satu objek terdeteksi.")
 
@@ -210,11 +205,10 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
 
                 # prediksi CNN
                 try:
-                    preds = classifier.predict(img_array, verbose=0)[0] # verbose=0 untuk Streamlit
-                    if len(preds) == NUM_CLASSES: # Cek apakah jumlah prediksi sesuai dengan jumlah kelas
+                    preds = classifier.predict(img_array, verbose=0)[0]
+                    if len(preds) == NUM_CLASSES:
                         class_names_cnn = CLASS_NAMES
                     else:
-                        # Jika tidak sesuai, fallback ke penamaan generik
                         class_names_cnn = [f"Makanan {i+1}" for i in range(len(preds))]
 
                     pred_index = np.argmax(preds)
@@ -248,7 +242,6 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
                     x="Nutrisi",
                     y="Nilai",
                     color="Nutrisi",
-                    # Perubahan: Judul grafik disesuaikan
                     title=f"🍴 Komposisi Gizi Perkiraan untuk *{predicted_food}*",
                     text_auto=".2f",
                 )
@@ -269,9 +262,7 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
 # ===========================================
 # MODE B – ANALISIS MODEL
 # ===========================================
-# Perubahan: Mengganti "📊 Analisis Model" menjadi "🎯 Analisis Klasifikasi"
 elif menu == "🎯 Analisis Klasifikasi":
-    # Perubahan: Mengganti judul atas
     st.header("🎯 Analisis Performa Klasifikasi")
     file_path = "Model/evaluasi.csv"
 
