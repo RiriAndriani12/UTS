@@ -12,9 +12,6 @@ import random
 # ===========================================
 # SIMULASI DAFTAR KELAS
 # ===========================================
-# ===========================================
-# SIMULASI DAFTAR KELAS (PENTING: URUTAN KELAS DITUKAR SEPENUHNYA)
-# ===========================================
 FOOD_CLASSES = {
     0: "Ayam Goreng",
     1: "Ayam Pop",
@@ -25,6 +22,13 @@ FOOD_CLASSES = {
 NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
 
+# Dictionary untuk menyesuaikan penamaan kelas ID yang tidak ada di FOOD_CLASSES (sesuai permintaan user)
+# ID 8, 6, 5 DIUBAH KE: Gulai Ikan, Daging Rendang, Ayam Goreng
+CUSTOM_CLASS_MAPPING = {
+    8: "Gulai Ikan",
+    6: "Daging Rendang",
+    5: "Ayam Goreng",
+}
 
 # ===========================================
 # LOAD MODELS
@@ -32,6 +36,7 @@ CLASS_NAMES = list(FOOD_CLASSES.values())
 @st.cache_resource
 def load_models():
     yolo_model = YOLO("Model/Riri Andriani_Laporan 4.pt")
+    # Menonaktifkan compile saat load untuk model Keras yang sudah dilatih (jika compile=False diperlukan)
     classifier = tf.keras.models.load_model("Model/saved_model.keras", compile=False) 
     return yolo_model, classifier
 
@@ -44,7 +49,6 @@ except Exception as e:
 # ===========================================
 # ESTIMASI NUTRISI (FUNGSI UTK SIMULASI DATA BERDASARKAN MAKANAN)
 # ===========================================
-# Fungsi ini HANYA akan dipanggil di Mode YOLO
 def estimate_nutrition(food_name):
     if "Ayam Goreng" in food_name:
         kalori = random.randint(350, 550)
@@ -76,7 +80,7 @@ def estimate_nutrition(food_name):
         protein = random.uniform(10, 40)
         lemak = random.uniform(5, 30)
         karbo = random.uniform(20, 80)
-    
+        
     return kalori, protein, lemak, karbo
 
 # ===========================================
@@ -103,6 +107,24 @@ st.markdown(
     }
     .stButton>button:hover {
         background-color: #ff944d;
+    }
+    .footer-container {
+        display: flex;
+        justify-content: center; /* Diubah menjadi center karena logo di kanan dihapus */
+        align-items: center;
+        padding: 10px 0;
+        margin-top: 20px;
+        border-top: 1px solid #e0e0e0;
+        color: gray;
+        font-size: 0.9em;
+    }
+    .footer-left {
+        display: flex;
+        align-items: center;
+    }
+    .footer-text {
+        margin: 0;
+        text-align: center;
     }
     </style>
     """,
@@ -269,35 +291,62 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
                 pred_index = np.argmax(preds)
                 confidence_cnn = preds[pred_index] * 100
                 
-                # Mengambil nama kelas yang benar dari FOOD_CLASSES
-                if pred_index in FOOD_CLASSES:
-                    predicted_food_cnn = FOOD_CLASSES[pred_index]
-                else:
-                    predicted_food_cnn = f"Makanan (ID {pred_index})"
+                # Mengambil nama kelas yang benar dari FOOD_CLASSES atau CUSTOM_CLASS_MAPPING
+                predicted_food_cnn = FOOD_CLASSES.get(pred_index)
+                if predicted_food_cnn is None:
+                    predicted_food_cnn = CUSTOM_CLASS_MAPPING.get(pred_index, f"Makanan (ID {pred_index})")
 
                 st.success(f"🧠 Prediksi Tertinggi: *{predicted_food_cnn}* ({confidence_cnn:.2f}%)")
                 
-                # PERBAIKAN: Mengubah top_k menjadi NUM_CLASSES (5)
+                # Menampilkan semua 5 prediksi
                 top_k = NUM_CLASSES 
-                top_indices = np.argsort(preds)[::-1][:top_k]
+                top_indices = np.argsort(preds)[::-1]
                 
                 st.markdown("##### Probabilitas Lengkap:")
-                df_preds = pd.DataFrame({
-                    "Kelas": [FOOD_CLASSES.get(i, f"ID {i}") for i in top_indices],
-                    "Probabilitas (%)": [preds[i] * 100 for i in top_indices]
-                })
+                
+                # Fungsi untuk mendapatkan nama kelas yang disesuaikan
+                def get_display_name(i):
+                    # Coba ambil dari FOOD_CLASSES (ID 0-4)
+                    name = FOOD_CLASSES.get(i)
+                    if name is None:
+                        # Jika tidak ada, coba ambil dari CUSTOM_CLASS_MAPPING (ID 8, 6, 5, dll)
+                        name = CUSTOM_CLASS_MAPPING.get(i)
+                    # Jika masih tidak ada, gunakan ID mentah
+                    return name if name is not None else f"ID {i}"
+                
+                # Buat DataFrame hanya untuk 5 prediksi teratas (atau sebanyak kelas yang tersedia)
+                df_preds_data = []
+                # Memastikan kita hanya mengambil hingga 5 kelas yang relevan dengan output model
+                for count, i in enumerate(top_indices):
+                    if count >= top_k:
+                         break
+                    
+                    prob = preds[i] * 100
+                    class_name = get_display_name(i)
+                    df_preds_data.append({"Kelas": class_name, "Probabilitas (%)": prob})
+                
+                df_preds = pd.DataFrame(df_preds_data)
+
+                # Menampilkan DataFrame
                 st.dataframe(df_preds.style.format({'Probabilitas (%)': '{:.2f}%'}), use_container_width=True)
 
             except Exception as e:
                 st.error(f"Gagal melakukan prediksi dengan model CNN. Error: {e}")
         else:
             st.warning("Model Klasifikasi CNN tidak dimuat. Prediksi tidak dapat dilakukan.")
-            
+
 # ===========================================
-# FOOTER
+# FOOTER (Logo USK Dihapus)
 # ===========================================
 st.markdown("---")
 st.markdown(
-    "<p style='text-align:center; color:gray;'>© 2025 | Smart Food Vision by Riri Andriani 🍱 | YOLOv8 + TensorFlow</p>",
+    f"""
+    <div class="footer-container">
+        <div class="footer-left footer-text">
+            © 2025 | SMART FOOD VISION <br>
+            RIRI ANDRIANI (2308108010068)
+        </div>
+    </div>
+    """,
     unsafe_allow_html=True
 )
