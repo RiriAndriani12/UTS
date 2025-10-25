@@ -15,9 +15,9 @@ import random
 FOOD_CLASSES = {
     0: "Ayam Goreng",
     1: "Ayam Pop",
-    2: "Daging Rendang",
+    2: "Daging Rendang", # Ini mungkin yang diprediksi sebagai "Makanan 2"
     3: "Dendeng Batokok",
-    4: "Gulai Ikan", 
+    4: "Gulai Ikan", # Gambar input Anda terlihat seperti Gulai Ikan
 }
 NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
@@ -130,7 +130,6 @@ def load_image_selection():
 
     return img.convert("RGB")
 
-# Perubahan: Opsi menu tetap sama
 menu = st.sidebar.radio(
     "📂 Pilih Mode:",
     ["🔍 Deteksi Objek YOLO", "🧠 Klasifikasi & Nutrisi"]
@@ -151,12 +150,10 @@ if menu == "🔍 Deteksi Objek YOLO":
     if yolo_model:
         st.subheader("Hasil Deteksi YOLO")
         
-        # Menjalankan deteksi
         results = yolo_model(img, verbose=False)
         result_img = results[0].plot()
         st.image(result_img, caption="Hasil Deteksi YOLO (dengan bounding box dan label)", use_container_width=True)
 
-        # Menampilkan daftar objek yang terdeteksi
         detected_items = []
         for r in results[0].boxes:
             class_id = int(r.cls.item())
@@ -179,7 +176,6 @@ if menu == "🔍 Deteksi Objek YOLO":
 elif menu == "🧠 Klasifikasi & Nutrisi":
     st.header("🧠 Klasifikasi Makanan & Estimasi Gizi")
 
-    # Memuat dan menampilkan gambar input
     img = load_image_selection()
     if img is None:
         st.stop()
@@ -187,7 +183,6 @@ elif menu == "🧠 Klasifikasi & Nutrisi":
     col1, col2 = st.columns(2)
     
     with col1:
-        # Perubahan: Menampilkan gambar input di kolom kiri
         st.image(img, caption="📷 Gambar yang Diuji (Input Model Klasifikasi)", use_container_width=True)
 
     # ==============================
@@ -207,15 +202,19 @@ elif menu == "🧠 Klasifikasi & Nutrisi":
 
             try:
                 preds = classifier.predict(img_array, verbose=0)[0]
-                if len(preds) == NUM_CLASSES:
-                    class_names_cnn = CLASS_NAMES
-                else:
-                    class_names_cnn = [f"Makanan {i+1}" for i in range(len(preds))]
-
+                
                 pred_index = np.argmax(preds)
-                predicted_food_cnn = class_names_cnn[pred_index]
                 confidence_cnn = preds[pred_index] * 100
                 
+                # PERBAIKAN UTAMA: Mengambil nama kelas langsung dari dictionary FOOD_CLASSES
+                # menggunakan indeks prediksi (pred_index) sebagai kuncinya.
+                if pred_index in FOOD_CLASSES:
+                    predicted_food_cnn = FOOD_CLASSES[pred_index]
+                else:
+                    # Fallback jika indeks prediksi di luar rentang FOOD_CLASSES
+                    predicted_food_cnn = f"Makanan (ID {pred_index})"
+
+
                 st.success(f"🧠 Prediksi Model Klasifikasi CNN: *{predicted_food_cnn}* ({confidence_cnn:.2f}%)")
                 predicted_food = predicted_food_cnn # Tetapkan hasil CNN sebagai prediksi utama
                 confidence = confidence_cnn
