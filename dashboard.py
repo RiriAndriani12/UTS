@@ -88,6 +88,23 @@ def estimate_nutrition(food_name):
 # ===========================================
 st.set_page_config(page_title="Smart Food Vision 🍱", page_icon="🍱", layout="wide")
 
+# TAMBAHAN UNTUK FOTO ASISTEN LABORATORIUM DI SIDEBAR
+st.sidebar.markdown("---")
+st.sidebar.header("🎓 ASISTEN LABORATORIUM 🎓") 
+
+try:
+    # ASISTEN LABORATORIUM (DIAZ)
+    st.sidebar.markdown("**ASISTEN LABORATORIUM**") 
+    st.sidebar.image("aslab/bg diaz.jpeg", caption="DIAZ DARSYA RIZQULLAH") 
+    
+    # ASISTEN LABORATORIUM (MUSLIADI)
+    st.sidebar.markdown("**ASISTEN LABORATORIUM**")
+    st.sidebar.image("aslab/bg mus.jpeg", caption="MUSLIADI")
+
+except Exception:
+    st.sidebar.warning("Gagal memuat foto Asisten Laboratorium. Pastikan file gambar ada di folder 'aslab/' (misalnya: bg diaz.jpeg dan bg mus.jpeg).")
+
+
 st.markdown(
     """
     <style>
@@ -336,7 +353,7 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
             st.warning("Model Klasifikasi CNN tidak dimuat. Prediksi tidak dapat dilakukan.")
 
 # ===========================================
-# FOOTER (Logo USK Dihapus)
+# FOOTER (Dengan Keterangan ASLEB dan Dosen)
 # ===========================================
 st.markdown("---")
 st.markdown(
@@ -344,7 +361,9 @@ st.markdown(
     <div class="footer-container">
         <div class="footer-left footer-text">
             © 2025 | SMART FOOD VISION <br>
-            RIRI ANDRIANI (2308108010068)
+            <strong style="color: #2b2b2b;">RIRI ANDRIANI (2308108010068)</strong><br>
+            <span style="font-size: 0.8em; color: #4f4f4f;">ASISTEN LABORATORIUM:</span> DIAZ DARSYA RIZQULLAH<br>
+            <span style="font-size: 0.8em; color: #4f4f4f;">ASISTEN LABORATORIUM:</span> MUSLIADI
         </div>
     </div>
     """,
