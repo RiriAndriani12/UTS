@@ -22,6 +22,14 @@ FOOD_CLASSES = {
 NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
 
+# Dictionary untuk menyesuaikan penamaan kelas ID yang tidak ada di FOOD_CLASSES (sesuai permintaan user)
+# Diperlukan jika model CNN memiliki output lebih dari 5 kelas, namun kita hanya ingin menampilkan 5 nama makanan utama
+# ID 8, 6, 5 DIUBAH KE: Gulai Ikan, Daging Rendang, Ayam Goreng
+CUSTOM_CLASS_MAPPING = {
+    8: "Gulai Ikan",
+    6: "Daging Rendang",
+    5: "Ayam Goreng",
+}
 
 # ===========================================
 # LOAD MODELS
@@ -29,6 +37,7 @@ CLASS_NAMES = list(FOOD_CLASSES.values())
 @st.cache_resource
 def load_models():
     yolo_model = YOLO("Model/Riri Andriani_Laporan 4.pt")
+    # Menonaktifkan compile saat load untuk model Keras yang sudah dilatih (jika compile=False diperlukan)
     classifier = tf.keras.models.load_model("Model/saved_model.keras", compile=False) 
     return yolo_model, classifier
 
@@ -72,7 +81,7 @@ def estimate_nutrition(food_name):
         protein = random.uniform(10, 40)
         lemak = random.uniform(5, 30)
         karbo = random.uniform(20, 80)
-    
+        
     return kalori, protein, lemak, karbo
 
 # ===========================================
@@ -102,7 +111,7 @@ st.markdown(
     }
     .footer-container {
         display: flex;
-        justify-content: space-between;
+        justify-content: center; /* Diubah menjadi center karena logo di kanan dihapus */
         align-items: center;
         padding: 10px 0;
         margin-top: 20px;
@@ -110,17 +119,15 @@ st.markdown(
         color: gray;
         font-size: 0.9em;
     }
-    .footer-left, .footer-right {
+    .footer-left {
         display: flex;
         align-items: center;
     }
     .footer-text {
         margin: 0;
+        text-align: center;
     }
-    .usk-logo {
-        height: 40px; /* Atur ukuran logo sesuai kebutuhan */
-        margin-left: 10px;
-    }
+    /* Logo USK dihapus dari CSS */
     </style>
     """,
     unsafe_allow_html=True
@@ -286,23 +293,43 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
                 pred_index = np.argmax(preds)
                 confidence_cnn = preds[pred_index] * 100
                 
-                # Mengambil nama kelas yang benar dari FOOD_CLASSES
-                if pred_index in FOOD_CLASSES:
-                    predicted_food_cnn = FOOD_CLASSES[pred_index]
-                else:
-                    predicted_food_cnn = f"Makanan (ID {pred_index})"
+                # Mengambil nama kelas yang benar dari FOOD_CLASSES atau CUSTOM_CLASS_MAPPING
+                predicted_food_cnn = FOOD_CLASSES.get(pred_index)
+                if predicted_food_cnn is None:
+                    predicted_food_cnn = CUSTOM_CLASS_MAPPING.get(pred_index, f"Makanan (ID {pred_index})")
 
                 st.success(f"🧠 Prediksi Tertinggi: *{predicted_food_cnn}* ({confidence_cnn:.2f}%)")
                 
                 # Menampilkan semua 5 prediksi
                 top_k = NUM_CLASSES 
-                top_indices = np.argsort(preds)[::-1][:top_k]
+                top_indices = np.argsort(preds)[::-1]
                 
                 st.markdown("##### Probabilitas Lengkap:")
-                df_preds = pd.DataFrame({
-                    "Kelas": [FOOD_CLASSES.get(i, f"ID {i}") for i in top_indices],
-                    "Probabilitas (%)": [preds[i] * 100 for i in top_indices]
-                })
+                
+                # Fungsi untuk mendapatkan nama kelas yang disesuaikan
+                def get_display_name(i):
+                    # Coba ambil dari FOOD_CLASSES (ID 0-4)
+                    name = FOOD_CLASSES.get(i)
+                    if name is None:
+                        # Jika tidak ada, coba ambil dari CUSTOM_CLASS_MAPPING (ID 8, 6, 5, dll)
+                        name = CUSTOM_CLASS_MAPPING.get(i)
+                    # Jika masih tidak ada, gunakan ID mentah
+                    return name if name is not None else f"ID {i}"
+                
+                # Buat DataFrame hanya untuk 5 prediksi teratas (atau sebanyak kelas yang tersedia)
+                df_preds_data = []
+                for i in top_indices:
+                    # Ambil probabilitas untuk kelas i
+                    prob = preds[i] * 100
+                    # Dapatkan nama kelas yang disesuaikan
+                    class_name = get_display_name(i)
+                    df_preds_data.append({"Kelas": class_name, "Probabilitas (%)": prob})
+                    if len(df_preds_data) >= top_k:
+                         break
+                
+                df_preds = pd.DataFrame(df_preds_data)
+
+                # Menampilkan DataFrame
                 st.dataframe(df_preds.style.format({'Probabilitas (%)': '{:.2f}%'}), use_container_width=True)
 
             except Exception as e:
@@ -311,7 +338,7 @@ elif menu == "🧠 Klasifikasi Gambar CNN":
             st.warning("Model Klasifikasi CNN tidak dimuat. Prediksi tidak dapat dilakukan.")
 
 # ===========================================
-# FOOTER
+# FOOTER (Logo USK Dihapus)
 # ===========================================
 st.markdown("---")
 st.markdown(
@@ -320,10 +347,6 @@ st.markdown(
         <div class="footer-left footer-text">
             © 2025 | SMART FOOD VISION <br>
             RIRI ANDRIANI (2308108010068)
-        </div>
-        <div class="footer-right">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Logo_Universitas_Syiah_Kuala.svg/1200px-Logo_Universitas_Syiah_Kuala.svg.png" 
-                 alt="Logo USK" class="usk-logo">
         </div>
     </div>
     """,
