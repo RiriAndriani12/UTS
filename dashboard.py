@@ -88,24 +88,6 @@ def estimate_nutrition(food_name):
 # ===========================================
 st.set_page_config(page_title="Smart Food Vision 🍱", page_icon="🍱", layout="wide")
 
-# Tambahan: Menampilkan Foto di Sidebar
-st.sidebar.markdown("---")
-# KOREKSI HEADER UTAMA MENJADI ASISTEN LABORATORIUM
-st.sidebar.header("🎓 ASISTEN LABORATORIUM 🎓") 
-
-try:
-    # ASLEB (Diaz)
-    st.sidebar.markdown("**ASISTEN LABORATORIUM**") 
-    st.sidebar.image("aslab/bg diaz.jpeg", caption="DIAZ DARSYA RIZQULLAH") # NAMA DIAZ CAPSLOCK
-    
-    # MUSLIADI (Sekarang dilabeli ASISTEN LABORATORIUM)
-    st.sidebar.markdown("**ASISTEN LABORATORIUM**") 
-    st.sidebar.image("aslab/bg mus.jpeg", caption="MUSLIADI")
-
-except Exception:
-    st.sidebar.warning("Gagal memuat foto pembimbing/asleb. Pastikan file gambar ada di folder 'aslab/'.")
-
-
 st.markdown(
     """
     <style>
@@ -128,7 +110,7 @@ st.markdown(
     }
     .footer-container {
         display: flex;
-        justify-content: center;
+        justify-content: center; /* Diubah menjadi center karena logo di kanan dihapus */
         align-items: center;
         padding: 10px 0;
         margin-top: 20px;
@@ -138,11 +120,10 @@ st.markdown(
     }
     .footer-left {
         display: flex;
-        flex-direction: column; /* Mengubah arah layout menjadi kolom */
         align-items: center;
     }
     .footer-text {
-        margin: 2px 0; /* Memberi sedikit jarak antar baris */
+        margin: 0;
         text-align: center;
     }
     </style>
@@ -178,7 +159,7 @@ def load_image_selection():
 # Mode di Sidebar: Deteksi YOLO (dengan Nutrisi) dan Klasifikasi CNN (murni)
 menu = st.sidebar.radio(
     "📂 Pilih Mode:",
-    ["🔍 Deteksi & Nutrisi YOLO", "🧠 Klasifikasi Gambar"]
+    ["🔍 Deteksi & Nutrisi YOLO", "🧠 Klasifikasi Gambar CNN"]
 )
 
 # ===========================================
@@ -279,10 +260,10 @@ if menu == "🔍 Deteksi & Nutrisi YOLO":
 
 
 # ===========================================
-# MODE 2 – KLASIFIKASI GAMBAR (MURNI)
+# MODE 2 – KLASIFIKASI GAMBAR CNN (MURNI)
 # ===========================================
-elif menu == "🧠 Klasifikasi Gambar":
-    st.header("🧠 Klasifikasi Gambar")
+elif menu == "🧠 Klasifikasi Gambar CNN":
+    st.header("🧠 Klasifikasi Gambar (Model CNN)")
 
     img = load_image_selection()
     if img is None:
@@ -355,7 +336,7 @@ elif menu == "🧠 Klasifikasi Gambar":
             st.warning("Model Klasifikasi CNN tidak dimuat. Prediksi tidak dapat dilakukan.")
 
 # ===========================================
-# FOOTER (Dengan Keterangan ASLEB dan Dosen)
+# FOOTER (Logo USK Dihapus)
 # ===========================================
 st.markdown("---")
 st.markdown(
@@ -363,9 +344,7 @@ st.markdown(
     <div class="footer-container">
         <div class="footer-left footer-text">
             © 2025 | SMART FOOD VISION <br>
-            <strong style="color: #2b2b2b;">RIRI ANDRIANI (2308108010068)</strong><br>
-            <span style="font-size: 0.8em; color: #4f4f4f;">ASISTEN LABORATORIUM:</span> DIAZ DARSYA RIZQULLAH<br>
-            <span style="font-size: 0.8em; color: #4f4f4f;">ASISTEN LABORATORIUM:</span> MUSLIADI
+            RIRI ANDRIANI (2308108010068)
         </div>
     </div>
     """,
