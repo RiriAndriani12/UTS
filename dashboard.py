@@ -11,7 +11,6 @@ import random
 
 # ===========================================
 # SIMULASI DAFTAR KELAS (PENTING: SESUAIKAN DENGAN URUTAN MODEL ANDA)
-# Urutan yang sudah dikonfirmasi: 0=Ayam Goreng, 1=Ayam Pop, dst.
 # ===========================================
 FOOD_CLASSES = {
     0: "Ayam Goreng",
@@ -42,6 +41,7 @@ except Exception as e:
 # ===========================================
 # ESTIMASI NUTRISI (FUNGSI UTK SIMULASI DATA BERDASARKAN MAKANAN)
 # ===========================================
+# Fungsi ini HANYA akan dipanggil di Mode YOLO
 def estimate_nutrition(food_name):
     if "Ayam Goreng" in food_name:
         kalori = random.randint(350, 550)
@@ -131,17 +131,17 @@ def load_image_selection():
 
     return img.convert("RGB")
 
-# Pemisahan Mode di Sidebar
+# Mode di Sidebar: Deteksi YOLO (dengan Nutrisi) dan Klasifikasi CNN (murni)
 menu = st.sidebar.radio(
     "📂 Pilih Mode:",
-    ["🔍 Deteksi Objek YOLO", "🧠 Klasifikasi & Nutrisi"]
+    ["🔍 Deteksi & Nutrisi YOLO", "🧠 Klasifikasi Gambar CNN"]
 )
 
 # ===========================================
-# MODE 1 – DETEKSI OBJEK YOLO
+# MODE 1 – DETEKSI & NUTRISI YOLO
 # ===========================================
-if menu == "🔍 Deteksi Objek YOLO":
-    st.header("🔍 Deteksi Makanan (YOLOv8)")
+if menu == "🔍 Deteksi & Nutrisi YOLO":
+    st.header("🔍 Deteksi Makanan & Estimasi Gizi (YOLOv8)")
     
     img = load_image_selection()
     if img is None:
@@ -149,82 +149,58 @@ if menu == "🔍 Deteksi Objek YOLO":
 
     st.image(img, caption="📷 Gambar yang Diuji", use_container_width=True)
     
-    if yolo_model:
-        st.subheader("Hasil Deteksi YOLO")
-        
-        results = yolo_model(img, verbose=False)
-        result_img = results[0].plot()
-        st.image(result_img, caption="Hasil Deteksi YOLO (dengan bounding box dan label)", use_container_width=True)
-
-        detected_items = []
-        for r in results[0].boxes:
-            class_id = int(r.cls.item())
-            conf = r.conf.item()
-            food_name_by_id = FOOD_CLASSES.get(class_id, f"Objek Tak Dikenal {class_id}")
-            detected_items.append(f"• {food_name_by_id} ({conf*100:.2f}%)")
-        
-        if detected_items:
-            st.markdown("##### 🎯 Objek Terdeteksi:")
-            st.markdown("\n".join(detected_items))
-        else:
-            st.info("Tidak ada objek makanan yang terdeteksi.")
-    else:
-        st.warning("Model YOLO tidak dimuat.")
-
-# ===========================================
-# MODE 2 – KLASIFIKASI & NUTRISI
-# ===========================================
-elif menu == "🧠 Klasifikasi & Nutrisi":
-    st.header("🧠 Klasifikasi Makanan & Estimasi Gizi")
-
-    img = load_image_selection()
-    if img is None:
-        st.stop()
-
-    # Layout untuk menampilkan gambar dan hasil
-    col1, col2 = st.columns(2)
+    # === Inisialisasi Deteksi ===
+    detected_food_names = []
+    first_detected_food_name = "Makanan Tidak Diketahui"
+    first_detected_confidence = 0.0
     
+    # === BAGI LAYOUT ===
+    col1, col2 = st.columns(2)
+
+    # ==============================
+    # 🔍 YOLO DETECTION (Kolom Kiri)
+    # ==============================
     with col1:
-        # Menampilkan gambar input di kolom kiri
-        st.image(img, caption="📷 Gambar yang Diuji (Input Model Klasifikasi)", use_container_width=True)
+        st.subheader("🔍 Deteksi Objek (YOLOv8)")
+        if yolo_model:
+            results = yolo_model(img, verbose=False)
+            result_img = results[0].plot()
+            st.image(result_img, caption="Hasil Deteksi YOLO (Output Visual)", use_container_width=True)
 
-    with col2:
-        st.subheader("Hasil Klasifikasi & Estimasi Nutrisi")
-
-        predicted_food = "Makanan Tidak Diketahui"
-
-        # --- LANGKAH 1: Prediksi dengan CNN (Klasifikasi Gambar Tunggal) ---
-        if classifier:
-            input_shape = classifier.input_shape[1:3]
-            img_resized = img.resize(input_shape)
-            img_array = image.img_to_array(img_resized)
-            img_array = np.expand_dims(img_array, axis=0) / 255.0
-
-            try:
-                preds = classifier.predict(img_array, verbose=0)[0]
+            # Mendapatkan nama objek yang dideteksi
+            for i, r in enumerate(results[0].boxes):
+                class_id = int(r.cls.item())
+                conf = r.conf.item()
                 
-                pred_index = np.argmax(preds)
-                confidence_cnn = preds[pred_index] * 100
+                food_name_by_id = FOOD_CLASSES.get(class_id, f"Objek Tak Dikenal {class_id}")
                 
-                # Mengambil nama kelas yang benar dari FOOD_CLASSES
-                if pred_index in FOOD_CLASSES:
-                    predicted_food_cnn = FOOD_CLASSES[pred_index]
-                else:
-                    # Fallback jika indeks prediksi di luar rentang
-                    predicted_food_cnn = f"Makanan (ID {pred_index})"
-
-
-                st.success(f"🧠 Prediksi Model Klasifikasi CNN: *{predicted_food_cnn}* ({confidence_cnn:.2f}%)")
-                predicted_food = predicted_food_cnn
-
-            except Exception as e:
-                st.error(f"Gagal melakukan prediksi dengan model CNN. Error: {e}")
-                predicted_food = "Makanan Tidak Diketahui"
+                # Mengambil deteksi terbaik sebagai prediksi utama
+                if i == 0:
+                    first_detected_food_name = food_name_by_id
+                    first_detected_confidence = conf * 100
+                
+                detected_food_names.append(f"• {food_name_by_id} ({conf*100:.2f}%)")
         else:
-            st.warning("Model Klasifikasi CNN tidak dimuat.")
+            st.warning("Model YOLO tidak dimuat.")
+
+
+    # ==============================
+    # 📝 ESTIMASI NUTRISI (Kolom Kanan)
+    # ==============================
+    with col2:
+        st.subheader("📝 Estimasi Nutrisi (Berdasarkan Deteksi YOLO)")
+
+        predicted_food = first_detected_food_name
+
+        if predicted_food != "Makanan Tidak Diketahui" and first_detected_confidence > 0:
             
-        # --- LANGKAH 2: Estimasi Nutrisi dan Visualisasi ---
-        if predicted_food != "Makanan Tidak Diketahui":
+            st.success(f"🍽 Makanan Utama Dideteksi: *{predicted_food}* ({first_detected_confidence:.2f}%)")
+
+            # Menampilkan daftar deteksi
+            st.markdown("##### 🎯 Objek Terdeteksi:")
+            st.markdown("\n".join(detected_food_names))
+            
+            # --- Perhitungan Nutrisi ---
             kalori, protein, lemak, karbo = estimate_nutrition(predicted_food)
 
             df_nutrisi = pd.DataFrame({
@@ -253,6 +229,66 @@ elif menu == "🧠 Klasifikasi & Nutrisi":
                 title="Proporsi Nutrisi Makro (Tanpa Kalori)"
             )
             st.plotly_chart(fig_donut, use_container_width=True)
+
+        else:
+            st.warning("Tidak ada objek makanan yang terdeteksi atau model YOLO gagal dimuat untuk mengestimasi nutrisi.")
+
+
+# ===========================================
+# MODE 2 – KLASIFIKASI GAMBAR CNN (MURNI)
+# ===========================================
+elif menu == "🧠 Klasifikasi Gambar CNN":
+    st.header("🧠 Klasifikasi Gambar (Model CNN)")
+
+    img = load_image_selection()
+    if img is None:
+        st.stop()
+
+    # Layout untuk menampilkan gambar dan hasil
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Menampilkan gambar input di kolom kiri
+        st.image(img, caption="📷 Gambar yang Diuji (Input Model Klasifikasi)", use_container_width=True)
+
+    with col2:
+        st.subheader("Hasil Prediksi Kelas")
+
+        if classifier:
+            input_shape = classifier.input_shape[1:3]
+            img_resized = img.resize(input_shape)
+            img_array = image.img_to_array(img_resized)
+            img_array = np.expand_dims(img_array, axis=0) / 255.0
+
+            try:
+                preds = classifier.predict(img_array, verbose=0)[0]
+                
+                pred_index = np.argmax(preds)
+                confidence_cnn = preds[pred_index] * 100
+                
+                # Mengambil nama kelas yang benar dari FOOD_CLASSES
+                if pred_index in FOOD_CLASSES:
+                    predicted_food_cnn = FOOD_CLASSES[pred_index]
+                else:
+                    predicted_food_cnn = f"Makanan (ID {pred_index})"
+
+                st.success(f"🧠 Prediksi Tertinggi: *{predicted_food_cnn}* ({confidence_cnn:.2f}%)")
+                
+                # Menampilkan 3 prediksi teratas (opsional, untuk analisis)
+                top_k = 3
+                top_indices = np.argsort(preds)[::-1][:top_k]
+                
+                st.markdown("##### Probabilitas Lengkap:")
+                df_preds = pd.DataFrame({
+                    "Kelas": [FOOD_CLASSES.get(i, f"ID {i}") for i in top_indices],
+                    "Probabilitas (%)": [preds[i] * 100 for i in top_indices]
+                })
+                st.dataframe(df_preds.style.format({'Probabilitas (%)': '{:.2f}%'}), use_container_width=True)
+
+            except Exception as e:
+                st.error(f"Gagal melakukan prediksi dengan model CNN. Error: {e}")
+        else:
+            st.warning("Model Klasifikasi CNN tidak dimuat. Prediksi tidak dapat dilakukan.")
 
 # ===========================================
 # FOOTER
