@@ -96,7 +96,7 @@ try:
     # Asisten Laboratorium
     st.sidebar.markdown("**Asisten Laboratorium**")
     # PATH TELAH DIUBAH KE aslab/
-    st.sidebar.image("aslab/bg diaz.jpeg", caption="Diaz Darsya Rizqullah")
+    st.sidebar.image("aslab/bg diaz.jpeg", caption="DIAZ DARSYA RIZQULLAH")
     
     # Asisten Laboratorium
     st.sidebar.markdown("**Asisten Laboratorium**")
@@ -179,7 +179,7 @@ def load_image_selection():
 # Mode di Sidebar: Deteksi YOLO (dengan Nutrisi) dan Klasifikasi CNN (murni)
 menu = st.sidebar.radio(
     "📂 Pilih Mode:",
-    ["🔍 Deteksi & Nutrisi YOLO", "🧠 Klasifikasi Gambar CNN"]
+    ["🔍 Deteksi & Nutrisi YOLO", "🧠 Klasifikasi Gambar"]
 )
 
 # ===========================================
@@ -280,7 +280,8 @@ if menu == "🔍 Deteksi & Nutrisi YOLO":
 
 
 # ===========================================
-# MODE 2 – KLASIFIKASI GAMBAR CNN (MURNI)
+# MODE 2 – KLASIFIKASI GAMBAR (MURNI)
+# KOREKSI: Kondisi 'elif' disesuaikan dengan pilihan di st.sidebar.radio
 # ===========================================
 elif menu == "🧠 Klasifikasi Gambar":
     st.header("🧠 Klasifikasi Gambar")
@@ -372,5 +373,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
