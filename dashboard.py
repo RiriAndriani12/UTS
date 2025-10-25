@@ -12,15 +12,12 @@ import random
 # ===========================================
 # SIMULASI DAFTAR KELAS (SESUAIKAN DENGAN MODEL ANDA)
 # ===========================================
-# Perubahan: Daftar kelas disesuaikan dengan urutan yang BENAR dari model Anda
 FOOD_CLASSES = {
     0: "Ayam Goreng",
     1: "Ayam Pop",
     2: "Daging Rendang",
     3: "Dendeng Batokok",
     4: "Gulai Ikan", 
-    # Pastikan ID kelas ini (0, 1, 2, 3, 4) sudah PASTI sesuai dengan urutan kelas
-    # yang digunakan saat melatih model YOLOv8 dan CNN Anda.
 }
 NUM_CLASSES = len(FOOD_CLASSES)
 CLASS_NAMES = list(FOOD_CLASSES.values())
@@ -31,9 +28,7 @@ CLASS_NAMES = list(FOOD_CLASSES.values())
 # ===========================================
 @st.cache_resource
 def load_models():
-    # Model YOLOv8 harus memiliki daftar kelas yang sama secara internal
     yolo_model = YOLO("Model/Riri Andriani_Laporan 4.pt")
-    # Menonaktifkan mode compile saat memuat model Keras untuk menghindari potensi error pada Streamlit
     classifier = tf.keras.models.load_model("Model/saved_model.keras", compile=False) 
     return yolo_model, classifier
 
@@ -41,13 +36,12 @@ try:
     yolo_model, classifier = load_models()
 except Exception as e:
     st.error(f"Gagal memuat model. Pastikan file 'Riri Andriani_Laporan 4.pt' dan 'saved_model.keras' ada di folder 'Model/'. Error: {e}")
-    yolo_model, classifier = None, None # Set ke None jika gagal
+    yolo_model, classifier = None, None 
 
 # ===========================================
 # ESTIMASI NUTRISI (FUNGSI UTK SIMULASI DATA BERDASARKAN MAKANAN)
 # ===========================================
 def estimate_nutrition(food_name):
-    # Logika estimasi nutrisi yang lebih spesifik berdasarkan nama makanan
     if "Ayam Goreng" in food_name:
         kalori = random.randint(350, 550)
         protein = random.uniform(25, 40)
@@ -73,7 +67,7 @@ def estimate_nutrition(food_name):
         protein = random.uniform(20, 35)
         lemak = random.uniform(10, 20)
         karbo = random.uniform(10, 25)
-    else: # Default/makanan lain
+    else: 
         kalori = random.randint(200, 600)
         protein = random.uniform(10, 40)
         lemak = random.uniform(5, 30)
@@ -153,6 +147,8 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
         # 🔍 YOLO DETECTION
         # ==============================
         detected_food_names = []
+        first_detected_food_name = "Makanan Tidak Diketahui"
+        first_detected_confidence = 0.0
         
         with col1:
             st.subheader("🔍 Deteksi Objek (YOLOv8)")
@@ -162,13 +158,17 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
                 st.image(result_img, caption="Hasil Deteksi YOLO", use_container_width=True)
 
                 # Mendapatkan nama objek yang dideteksi
-                for r in results[0].boxes:
+                for i, r in enumerate(results[0].boxes):
                     class_id = int(r.cls.item())
                     conf = r.conf.item()
-                    if class_id in FOOD_CLASSES:
-                        detected_food_names.append(f"{FOOD_CLASSES[class_id]} ({conf*100:.2f}%)")
-                    else:
-                        detected_food_names.append(f"Objek Tak Dikenal {class_id} ({conf*100:.2f}%)")
+                    
+                    food_name_by_id = FOOD_CLASSES.get(class_id, f"Objek Tak Dikenal {class_id}")
+                    
+                    if i == 0:
+                        first_detected_food_name = food_name_by_id
+                        first_detected_confidence = conf * 100
+                    
+                    detected_food_names.append(f"{food_name_by_id} ({conf*100:.2f}%)")
             else:
                 st.warning("Model YOLO tidak dimuat.")
 
@@ -180,13 +180,12 @@ if menu == "🍛 Deteksi & Estimasi Nutrisi":
 
             predicted_food = "Makanan Tidak Diketahui"
 
-            if detected_food_names:
-                # KASUS 1: Objek terdeteksi oleh YOLO
+            if first_detected_food_name != "Makanan Tidak Diketahui":
+                # KASUS 1: Objek terdeteksi oleh YOLO (Menggunakan nama yang sudah disinkronkan)
                 st.info(f"✅ Ditemukan {len(detected_food_names)} Objek Makanan:")
                 
-                first_detection = detected_food_names[0].split('(')[0].strip() 
-                predicted_food = first_detection
-                confidence = float(detected_food_names[0].split('(')[1].strip('% )'))
+                predicted_food = first_detected_food_name
+                confidence = first_detected_confidence
 
                 st.success(f"🍽 Makanan Utama (Dari YOLO): *{predicted_food}* ({confidence:.2f}%)")
                 st.caption(f"Objek terdeteksi lainnya: {', '.join(detected_food_names[1:])}" if len(detected_food_names) > 1 else "Hanya satu objek terdeteksi.")
